@@ -1,0 +1,30 @@
+@import url("https://fonts.googleapis.com/css2?family=Reddit+Sans:ital,wght@0,200..900;1,200..900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Reddit+Sans:ital,wght@0,200..900;1,200..900&family=Redressed&display=swap");
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-primary: "Reddit Sans", sans-serif;
+  --font-secondary: "Redressed", cursive;
+}
+
+/* Optionally, handle dark mode */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --font-primary: "Reddit Sans", sans-serif;
+    --font-secondary: "Redressed", cursive;
+  }
+}
+
+body {
+  font-family: var(--font-primary);
+  background-color: white;
+  @apply bg-white;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-secondary);
+}
