@@ -3,7 +3,6 @@ import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Logout from "../logout";
-import icon from "@/app/icon.png";
 
 const Navbar = () => {
   return (
@@ -31,12 +30,6 @@ const Navbar = () => {
             className="menu dropdown-content menu-sm z-[1] mt-3 w-52 rounded-box bg-base-100 p-2 shadow"
           >
             <li>
-              <Link href="/student/clubs">Clubs</Link>
-            </li>
-            <li>
-              <Link href="/student/studentDashboard">Dashboard</Link>
-            </li>
-            <li>
               <Link href="/about">About Us</Link>
             </li>
             <li>
@@ -62,12 +55,6 @@ const Navbar = () => {
       <div className="navbar-center hidden lg:flex">
         <ul className="menu menu-horizontal px-1 pt-4">
           <li>
-            <Link href="/student/clubs">Clubs</Link>
-          </li>
-          <li>
-            <Link href="/student/studentDashboard">Dashboard</Link>
-          </li>
-          <li>
             <Link href="/about">About Us</Link>
           </li>
           <li>
@@ -76,16 +63,6 @@ const Navbar = () => {
         </ul>
       </div>
       <div className="navbar-end flex items-center space-x-4">
-        {/* Profile Button */}
-        <Link href="/student/profile" className="flex items-center space-x-2">
-          <Image
-            src={icon} // Replace with your profile picture URL or a placeholder image
-            alt="Profile"
-            width={40}
-            height={40}
-            className="rounded-full border border-gray-300"
-          />
-        </Link>
         <Logout />
       </div>
     </div>

@@ -8,7 +8,7 @@ import Image from "next/image";
 
 const NavbarLogin = () => {
   return (
-    <div className="navbar bg-gray-100">
+    <div className="navbar bg-white ">
       <div className="navbar-start">
         <div className="dropdown">
           <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
@@ -29,7 +29,7 @@ const NavbarLogin = () => {
           </div>
           <ul
             tabIndex={0}
-            className="menu dropdown-content menu-sm z-[1] mt-3 w-52 rounded-box bg-base-100 p-2 shadow"
+            className="menu menu-sm dropdown-content bg-base-100 rounded-box z-[1] mt-3 w-52 p-2 shadow"
           >
             {/* <li>
               <Link href="/student/clubs">Clubs</Link>
@@ -55,7 +55,7 @@ const NavbarLogin = () => {
             height={40}
             className="h-8 w-8 md:h-10 md:w-10"
           />
-          <span className="bg-gradient-to-r from-[#0103FF] to-[#01E4FF] bg-clip-text font-secondary text-2xl text-transparent md:mx-6 md:text-3xl">
+          <span className="font-secondary md:mx-6 text-2xl md:text-3xl bg-gradient-to-r from-[#0103FF] to-[#01E4FF] bg-clip-text text-transparent">
             Point Quest
           </span>
         </Link>
@@ -71,10 +71,10 @@ const NavbarLogin = () => {
         </ul>
       </div>
       <div className="navbar-end">
-        <div className="mr-6 hover:underline">
+        <div className="hover:underline mr-6">
           <Link href="/login">Login</Link>
         </div>
-        <div className="mr-2 hover:underline">
+        <div className="hover:underline mr-2">
           <Link href="/signup">Sign up</Link>
         </div>
       </div>

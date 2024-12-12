@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 
 const page = () => {
   return (
@@ -15,9 +16,15 @@ const page = () => {
         </p>
 
         {/* Responsive button */}
-        <button className="rounded-full bg-gradient-to-t from-blue-700 to-cyan-500 px-6 py-2 text-base font-semibold text-white shadow-md hover:from-cyan-500 hover:to-blue-600  sm:px-8 sm:py-3 sm:text-lg">
+        {/* <button className="rounded-full bg-gradient-to-t from-blue-700 to-cyan-500 px-6 py-2 text-base font-semibold text-white shadow-md hover:from-cyan-500 hover:to-blue-600  sm:px-8 sm:py-3 sm:text-lg">
           View Student Details
-        </button>
+        </button> */}
+        <Link
+          href="/faculty/studentinfo"
+          className="rounded-full bg-gradient-to-t from-blue-700 to-cyan-500 px-6 py-2 text-base font-semibold text-white shadow-md hover:from-cyan-500 hover:to-blue-600 sm:px-8 sm:py-3 sm:text-lg"
+        >
+          View Student Details
+        </Link>
       </div>
     </div>
   );

@@ -1,20 +1,11 @@
 import { NextResponse } from "next/server";
 import { hash } from "bcrypt";
-import { addStudent } from "@/app/_lib/data-service";
+import { addFaculty } from "@/app/_lib/data-service";
 
 export async function POST(request: Request) {
   try {
-    const {
-      firstName,
-      lastName,
-      email,
-      password,
-      phoneNo,
-      branch,
-      usn,
-
-      passingYear,
-    } = await request.json();
+    const { firstName, lastName, email, password, phoneNo, branch, uid } =
+      await request.json();
     //validate email and password
     console.log({
       firstName,
@@ -23,24 +14,22 @@ export async function POST(request: Request) {
       password,
       phoneNo,
       branch,
-      usn,
-      passingYear,
+      uid,
     });
     const hashedPassword = await hash(password, 10);
 
-    const studentData = {
+    const facultyData = {
       firstName: firstName,
       lastName: lastName,
       email: email,
       password: hashedPassword,
       phoneNo: phoneNo,
       branch: branch,
-      USN: usn,
-      passingYear: passingYear,
+      uid: uid,
     };
 
-    const response = await addStudent(studentData);
-    console.log("Student added: ", response);
+    const response = await addFaculty(facultyData);
+    console.log("Faculty added: ", response);
   } catch (error) {
     console.log({ error });
   }

@@ -73,8 +73,10 @@
 
 import NextAuth, { NextAuthOptions, Session } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { compare } from "bcrypt";
-import { findStudent } from "@/app/_lib/data-service"; // Replace with your actual import path
+// import { compare } from "bcrypt";
+import bcrypt from "bcryptjs";
+
+import { findFaculty } from "@/app/_lib/data-service"; // Replace with your actual import paths
 import { JWT } from "next-auth/jwt";
 
 export const authOptions: NextAuthOptions = {
@@ -87,27 +89,27 @@ export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       credentials: {
-        usn: { label: "USN", type: "text" },
+        uid: { label: "UID", type: "text" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
         console.log("Authorize Credentials:", credentials);
 
-        if (!credentials?.usn || !credentials.password) {
+        if (!credentials?.uid || !credentials.password) {
           console.error("Missing credentials");
           return null;
         }
 
-        const user = await findStudent(credentials.usn);
+        const { uid, password } = credentials;
+        const user = await findFaculty(uid);
+
         if (!user || !user.password) {
-          console.error("Invalid USN or password not found");
+          console.error("Invalid uid or user not found");
           return null;
         }
 
-        const isValidPassword = await compare(
-          credentials.password,
-          user.password,
-        );
+        // Validate the password
+        const isValidPassword = await bcrypt.compare(password, user.password);
         if (!isValidPassword) {
           console.error("Incorrect password");
           return null;
@@ -130,7 +132,10 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }: { session: Session; token: JWT }) {
       if (token?.sub) {
-        session.user = { ...session.user, id: token.sub }; // Add user ID to session
+        session.user = {
+          ...session.user,
+          id: token.sub,
+        };
       }
       return session;
     },

@@ -1,4 +1,6 @@
 import { supabase } from "./supabase";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export async function getClub(id: number) {
   const { data, error } = await supabase
@@ -59,7 +61,7 @@ export async function getEvents() {
   const { data, error } = await supabase
     .from("Event")
     .select(
-      "id,name,clubId,description,contact,link,points,image,isCompleted,date",
+      "id,name,clubId,description,contact,link,points,image,isCompleted,date"
     )
     .order("name");
 
@@ -85,11 +87,67 @@ export async function getStudent(id: number) {
   return data;
 }
 
-export async function getParticipated(studentId: number) {
+export async function getBod(id: number) {
+  const { data, error } = await supabase
+    .from("BOD")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    console.error(error);
+  }
+
+  return data;
+}
+
+export async function getAdmin(id: number) {
+  const { data, error } = await supabase
+    .from("Admin")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) {
+    console.error(error);
+  }
+
+  return data;
+}
+
+export async function getParticipatedStudent(studentId: number) {
   const { data, error } = await supabase
     .from("Participated")
     .select("eventId")
     .eq("studentId", studentId);
+
+  if (error) {
+    console.error("Error fetching participation data:", error);
+    return null;
+  }
+
+  return data;
+}
+
+export async function getParticipatedBod(BodId: number) {
+  const { data, error } = await supabase
+    .from("Participated")
+    .select("eventId")
+    .eq("bodId", BodId);
+
+  if (error) {
+    console.error("Error fetching participation data:", error);
+    return null;
+  }
+
+  return data;
+}
+
+export async function getParticipatedAdmin(adminId: number) {
+  const { data, error } = await supabase
+    .from("Participated")
+    .select("eventId")
+    .eq("adminId", adminId);
 
   if (error) {
     console.error("Error fetching participation data:", error);
@@ -131,7 +189,7 @@ export async function getParticipatedClub(clubId: number) {
 
 export async function updateStudentPoints(
   studentId: number,
-  newPoints: number,
+  newPoints: number
 ) {
   const { data, error } = await supabase
     .from("Student")
@@ -146,8 +204,46 @@ export async function updateStudentPoints(
   return data;
 }
 
+export async function updateBodPoints(bodId: number, newPoints: number) {
+  const { data, error } = await supabase
+    .from("BOD")
+    .update({ points: newPoints })
+    .eq("id", bodId);
+
+  if (error) {
+    console.error("Error updating bod points:", error);
+    return "getting error while updating";
+  }
+
+  return data;
+}
+
+export async function updateAdminPoints(adminId: number, newPoints: number) {
+  const { data, error } = await supabase
+    .from("Admin")
+    .update({ points: newPoints })
+    .eq("id", adminId);
+
+  if (error) {
+    console.error("Error updating admin points:", error);
+    return "getting error while updating";
+  }
+
+  return data;
+}
+
 export async function calculateTotalPoints(studentId: number) {
-  const participations = await getParticipated(studentId);
+  const session = await getServerSession(authOptions);
+  const role = session?.user.role;
+
+  let participations;
+  if (role === "student") {
+    participations = await getParticipatedStudent(studentId);
+  } else if (role === "bod") {
+    participations = await getParticipatedBod(studentId);
+  } else {
+    participations = await getParticipatedAdmin(studentId);
+  }
 
   if (!participations || participations.length === 0) {
     console.log("No events found for this student.");
@@ -167,13 +263,19 @@ export async function calculateTotalPoints(studentId: number) {
 
 export async function updateStudentTotalPoints(studentId: number) {
   const totalPoints = await calculateTotalPoints(studentId);
-
-  const result = await updateStudentPoints(studentId, totalPoints);
+  const session = await getServerSession(authOptions);
+  const role = session?.user.role;
+  let result;
+  if (role === "student")
+    result = await updateStudentPoints(studentId, totalPoints);
+  else if (role === "bod")
+    result = await updateBodPoints(studentId, totalPoints);
+  else result = await updateAdminPoints(studentId, totalPoints);
 
   if (result) {
-    console.log(`Student points updated successfully to ${totalPoints}`);
+    console.log(`points updated successfully to ${totalPoints}`);
   } else {
-    console.error("Failed to update student points.");
+    console.error("Failed to update points.");
   }
 }
 
@@ -183,7 +285,7 @@ export async function updateStudent(
     firstName?: string;
     lastName?: string;
     phoneNo?: string;
-  },
+  }
 ) {
   const { data, error } = await supabase
     .from("Student")
@@ -197,7 +299,7 @@ export async function updatePoints(
   id: number,
   updatedData: {
     points?: number;
-  },
+  }
 ) {
   const { data, error } = await supabase
     .from("Student")
@@ -273,7 +375,7 @@ export async function updateEvent(
     clubId?: number;
     isCompleted?: boolean;
     date?: string;
-  },
+  }
 ) {
   const { data, error } = await supabase
     .from("Event")
@@ -288,6 +390,7 @@ export async function updateEvent(
 }
 
 export async function addClub(clubData: {
+  id: number;
   name: string;
   faculty: string;
   president: string;
@@ -315,7 +418,7 @@ export async function updateClub(
     techLead?: string;
     image?: string;
     category?: string;
-  },
+  }
 ) {
   const { data, error } = await supabase
     .from("Club")
@@ -330,16 +433,7 @@ export async function updateClub(
   return data;
 }
 
-export async function addBod(bodData: {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string; // Add the password field
-  phoneNo: string;
-  branch: string;
-  usn: string;
-  clubId: number;
-}) {
+export async function addBod(bodData) {
   const { data, error } = await supabase.from("BOD").insert([bodData]);
 
   if (error) {
@@ -351,30 +445,18 @@ export async function addBod(bodData: {
 }
 
 // Function to update BOD information
-export async function updateBod(
-  bodId: number,
-  updatedData: {
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-    password?: string; // Add the password field (optional)
-    phoneNo?: string;
-    branch?: string;
-    usn?: string;
-    clubId?: number;
-  },
-) {
+export async function updateBod(id: number, bodData: any) {
   const { data, error } = await supabase
-    .from("BOD")
-    .update(updatedData)
-    .eq("id", bodId);
+    .from("BOD") // Ensure your Supabase table name is "BOD"
+    .update(bodData) // `bodData` should only contain fields you want to update
+    .eq("id", id); // Match the record by the "id" field
 
   if (error) {
-    console.error("Error updating BOD information:", error);
-    return null;
+    console.error("Error updating BOD:", error);
+    throw new Error(error.message);
   }
 
-  return data;
+  return data; // Return the updated data
 }
 
 // Function to get all BODs
@@ -398,6 +480,7 @@ export async function addStudent(studentData: {
   branch: string;
   USN: string;
   passingYear: number;
+  image: string;
 }) {
   const { data, error } = await supabase.from("Student").insert([studentData]);
 
@@ -406,77 +489,6 @@ export async function addStudent(studentData: {
     throw new Error("Failed to add student record.");
   }
   return data;
-}
-
-export async function findStudent(usn: string) {
-  const { data, error } = await supabase
-    .from("Student")
-    .select("*")
-    .eq("USN", usn)
-    .single();
-
-  if (error) {
-    console.log("Failed to find student.");
-  }
-
-  return data;
-}
-
-// export async function isBOD(usn:string) {
-//   const {data,error}=await supabase.from("BOD").select("*").eq("USN",usn);
-
-//   if(error) {
-//     console.log("No BOD found");
-//     return null;
-//   }
-
-//   return data;
-// }
-
-// export async function addFeedBack(feedback: {
-//   name: string;
-//   email: string;
-//   message: string;
-// }) {
-//   const { data, error } = await supabase.from("Feedback").insert([feedback]);
-
-//   if (error) {
-//     console.log(
-//       "Error in adding feedback to database:",
-//       error.message,
-//       error.details,
-//     );
-//     return null; // Return null in case of error
-//   }
-
-//   // Check if data is valid and not empty
-//   if (!data) {
-//     console.log("No data returned after insert, something went wrong.");
-//     return null;
-//   }
-
-//   console.log("Feedback saved successfully:", data);
-//   return data; // Return the inserted data if successful
-// }
-
-export async function addFeedBack(feedback: {
-  name: string;
-  email: string;
-  message: string;
-}) {
-  const { error } = await supabase.from("Feedback").insert([feedback]);
-
-  if (error) {
-    console.error(
-      "Error in adding feedback to database:",
-      error.message,
-      error.details,
-    );
-    return false;
-  }
-
-  console.log("Feedback saved successfully");
-  return true; // Return true on success
 }
 
 export async function getBranches() {
@@ -490,5 +502,274 @@ export async function getBranches() {
     throw new Error("Branches could not be loaded");
   }
 
+  return data;
+}
+
+export async function getClubName(id: number) {
+  const { data, error } = await supabase
+    .from("Club")
+    .select("name")
+    .eq("id", id);
+  if (error) {
+    console.log("club name not found");
+  }
+  return data;
+}
+
+export async function getClubByBod(bodId: number) {
+  const { data, error } = await supabase
+    .from("BOD")
+    .select("clubId")
+    .eq("id", bodId);
+
+  if (error) {
+    console.log("error in finding club by using bod");
+  }
+  return data;
+}
+
+export async function getEventByClub(clubId: number) {
+  const { data, error } = await supabase
+    .from("Event")
+    .select("id,name")
+    .eq("clubId", clubId);
+  if (error) {
+    console.log("error to access events associated with club");
+  }
+
+  return data;
+}
+
+export async function addParticipatedStudent(
+  studentId: number,
+  eventId: number
+): Promise<boolean> {
+  const { error } = await supabase.from("Participated").insert([
+    { studentId, eventId }, // Specify the columns and values
+  ]);
+
+  if (error) {
+    console.error("Error inserting into Participated table:", error);
+    return false; // Return false if there's an error
+  }
+
+  return true; // Return true if insertion is successful
+}
+
+export async function addParticipatedBod(bodId: number, eventId: number) {
+  const { error } = await supabase.from("Participated").insert([
+    { bodId, eventId }, // Specify the columns and values
+  ]);
+
+  if (error) {
+    console.error("Error inserting into Participated table:", error);
+    return false; // or handle the error appropriately
+  }
+
+  return true; // Return the inserted data
+}
+
+export async function addParticipatedAdmin(adminId: number, eventId: number) {
+  const { error } = await supabase.from("Participated").insert([
+    { adminId, eventId }, // Specify the columns and values
+  ]);
+
+  if (error) {
+    console.error("Error inserting into Participated table:", error);
+    return false; // or handle the error appropriately
+  }
+
+  return true; // Return the inserted data
+}
+
+//REQUIRED FOR FACULTY
+
+export async function addFaculty(studentData: {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  phoneNo: number;
+  branch: string;
+  uid: string;
+}) {
+  const { data, error } = await supabase.from("Faculty").insert([studentData]);
+
+  if (error) {
+    console.error("Error adding faculty:", error.message);
+    throw new Error("Failed to add faculty record.");
+  }
+  return data;
+}
+
+export async function findFaculty(uid: string) {
+  const { data, error } = await supabase
+    .from("Faculty")
+    .select("*")
+    .eq("uid", uid)
+    .single();
+
+  if (error) {
+    console.log("Failed to find faculty.");
+  }
+
+  return data;
+}
+
+export async function addFeedBack(feedback: {
+  name: string;
+  email: string;
+  message: string;
+}) {
+  const { error } = await supabase.from("Feedback").insert([feedback]);
+
+  if (error) {
+    console.error(
+      "Error in adding feedback to database:",
+      error.message,
+      error.details
+    );
+    return false;
+  }
+
+  console.log("Feedback saved successfully");
+  return true; // Return true on success
+}
+
+export async function getFacultyBranch(id: number) {
+  const { data, error } = await supabase
+    .from("Faculty")
+    .select("branch")
+    .eq("id", id);
+
+  if (error) {
+    console.log("Cant get faculty branch");
+    return null;
+  }
+
+  return data;
+}
+
+export async function getStudentsByBranch(branch: string) {
+  const { data, error } = await supabase
+    .from("Student")
+    .select("*")
+    .eq("branch", branch);
+
+  if (error) {
+    console.log("Unable to get student by faculty branch");
+    return null;
+  }
+
+  return data;
+}
+
+export async function getBodsByBranch(branch: string) {
+  const { data, error } = await supabase
+    .from("BOD")
+    .select("*")
+    .eq("branch", branch);
+
+  if (error) {
+    console.log("Unable to get bod by faculty branch");
+    return null;
+  }
+
+  return data;
+}
+
+export async function getAdminsByBranch(branch: string) {
+  const { data, error } = await supabase
+    .from("Admin")
+    .select("*")
+    .eq("branch", branch);
+
+  if (error) {
+    console.log("Unable to get admin by faculty branch");
+    return null;
+  }
+
+  return data;
+}
+
+export async function findStudent(usn: string) {
+  const { data, error } = await supabase
+    .from("Student")
+    .select("*")
+    .eq("USN", usn)
+    .single();
+
+  if (error) {
+    console.log("Failed to find student.");
+    return null;
+  }
+
+  return data;
+}
+
+export async function findBod(usn: string) {
+  const { data, error } = await supabase
+    .from("BOD")
+    .select("*")
+    .eq("USN", usn)
+    .single();
+
+  if (error) {
+    console.log("Failed to find bod.");
+  }
+
+  return data;
+}
+
+export async function findAdmin(usn: string) {
+  const { data, error } = await supabase
+    .from("Admin")
+    .select("*")
+    .eq("USN", usn)
+    .single();
+
+  if (error) {
+    console.log("Failed to find admin.");
+  }
+
+  return data;
+}
+
+export async function getStudentsByYear(year: number, branch: string) {
+  const { data, error } = await supabase
+    .from("Student")
+    .select("*")
+    .eq("passingYear", year)
+    .eq("branch", branch);
+  if (error) {
+    console.log("Unable to get students by passing year");
+    return null;
+  }
+  return data;
+}
+
+export async function getBodsByYear(year: number, branch: string) {
+  const { data, error } = await supabase
+    .from("BOD")
+    .select("*")
+    .eq("passingYear", year)
+    .eq("branch", branch);
+  if (error) {
+    console.log("Unable to get bods by passing year");
+    return null;
+  }
+  return data;
+}
+
+export async function getAdminsByYear(year: number, branch: string) {
+  const { data, error } = await supabase
+    .from("Admin")
+    .select("*")
+    .eq("passingYear", year)
+    .eq("branch", branch);
+  if (error) {
+    console.log("Unable to get admins by passing year");
+    return null;
+  }
   return data;
 }
