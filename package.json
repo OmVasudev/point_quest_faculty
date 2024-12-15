@@ -11,6 +11,8 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.47.5",
     "bcrypt": "^5.1.1",
+    "bcryptjs": "^2.4.3",
+    "daisyui": "^4.12.22",
     "next": "15.0.4",
     "next-auth": "^4.24.11",
     "react": "^19.0.0",

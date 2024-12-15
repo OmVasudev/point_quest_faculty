@@ -526,25 +526,57 @@ const StudentsPage = () => {
             >
               &times;
             </button>
-            <h2 className="text-2xl font-bold mb-4">Student Details</h2>
-            <div className="mb-4">
-              <p>
-                <strong>Name:</strong> {selectedStudent.firstName}{" "}
-                {selectedStudent.lastName}
-              </p>
-              <p>
-                <strong>Email:</strong> {selectedStudent.email}
-              </p>
-              <p>
-                <strong>Phone:</strong> {selectedStudent.phoneNo}
-              </p>
-              <p>
-                <strong>USN:</strong> {selectedStudent.USN}
-              </p>
+            <h2 className=" text-center text-3xl font-bold mb-4">
+              Student Details
+            </h2>
+
+            <div className="grid grid-cols-2 gap-4 text-lg text-gray-700">
+              {/* Left Column */}
+              <div>
+                <div className="border-b py-3">
+                  <span className="font-semibold">Name:</span>{" "}
+                  <span>
+                    {selectedStudent.firstName + " " + selectedStudent.lastName}
+                  </span>
+                </div>
+                <div className="border-b py-3">
+                  <span className="font-semibold">USN:</span>{" "}
+                  <span>{selectedStudent.USN}</span>
+                </div>
+                <div className="border-b py-3">
+                  <span className="font-semibold">Phone:</span>{" "}
+                  <span>{selectedStudent.phoneNo}</span>
+                </div>
+              </div>
+
+              {/* Right Column */}
+              <div>
+                <div className="border-b py-3">
+                  <span className="font-semibold">Email:</span>{" "}
+                  <span>{selectedStudent.email}</span>
+                </div>
+                <div className="border-b py-3">
+                  <span className="font-semibold">Year of Passing:</span>{" "}
+                  <span>{selectedStudent.passingYear}</span>
+                </div>
+                <div className="border-b py-3">
+                  <span className="font-semibold">Branch:</span>{" "}
+                  <span>{selectedStudent.branch}</span>
+                </div>
+              </div>
+
+              {/* Highlighted Total Points Earned Section */}
+              <div className="col-span-2 mt-6">
+                <div className="bg-emerald-100 border border-emerald-500 rounded-lg p-4 text-center">
+                  <span className="font-bold text-xl text-emerald-700">
+                    Total Points Earned: {selectedStudent.points}
+                  </span>
+                </div>
+              </div>
             </div>
 
             {/* Participated Events Table */}
-            <div className="rounded-lg bg-white p-6 shadow-md lg:p-10">
+            <div className="rounded-lg bg-white p-6 shadow-md lg:p-10 mt-10">
               <h3 className="mb-6 text-xl font-semibold text-black md:text-2xl lg:text-3xl">
                 Participated Events:
               </h3>
